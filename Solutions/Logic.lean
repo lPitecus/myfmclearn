@@ -9,15 +9,28 @@ variable (P Q R : Prop)
 
 theorem doubleneg_intro :
   P → ¬ ¬ P  := by
-  sorry
+  intro hp
+  intro hnp
+  have negation := hnp hp
+  exact negation
 
 theorem doubleneg_elim :
   ¬ ¬ P → P  := by
-  sorry
+  intro hnp
+  by_cases hp : P
+  case pos =>
+    exact hp
+  case neg =>
+    have boom := hnp hp
+    contradiction
 
 theorem doubleneg_law :
   ¬ ¬ P ↔ P  := by
-  sorry
+  apply Iff.intro -- Ataque de uma equivalência === ataque de uma conjunção
+  case mp =>
+    exact doubleneg_elim P
+  case mpr =>
+    exact doubleneg_intro P
 
 
 ------------------------------------------------
@@ -26,11 +39,24 @@ theorem doubleneg_law :
 
 theorem disj_comm :
   (P ∨ Q) → (Q ∨ P)  := by
-  sorry
+  intro hporq
+  rcases hporq with (hp | hq)
+  case inl =>
+    right
+    exact hp
+  case inr =>
+    left
+    exact hq
 
 theorem conj_comm :
   (P ∧ Q) → (Q ∧ P)  := by
-  sorry
+  intro hpq
+  rcases hpq with ⟨hp, hq⟩
+  constructor   -- Scomando para separar o jogo em dois novos jogos
+  case intro.left =>
+    exact hq
+  case intro.right =>
+    exact hp
 
 
 ------------------------------------------------
@@ -39,11 +65,25 @@ theorem conj_comm :
 
 theorem impl_as_disj_converse :
   (¬ P ∨ Q) → (P → Q)  := by
-  sorry
+  intro hnporq
+  intro hp
+  rcases hnporq with (hnp | hq)
+  case inl =>
+    have boom := hnp hp
+    contradiction
+  case inr =>
+    exact hq
 
 theorem disj_as_impl :
   (P ∨ Q) → (¬ P → Q)  := by
-  sorry
+  intro hporq
+  intro hnp
+  rcases hporq with (hp | hq)
+  case inl =>
+    have boom := hnp hp
+    contradiction
+  case inr =>
+    exact hq
 
 
 ------------------------------------------------
@@ -87,7 +127,17 @@ theorem peirce_law_weak :
 
 theorem impl_linear :
   (P → Q) ∨ (Q → P)  := by
-  sorry
+  by_cases hnp : P
+  case pos =>
+    right
+    intro hp
+    exact hnp
+  case neg =>
+    left
+    intro hp
+    have boom := hnp hp
+    contradiction
+
 
 
 ------------------------------------------------
@@ -113,7 +163,16 @@ theorem demorgan_disj :
 
 theorem demorgan_disj_converse :
   (¬ P ∧ ¬ Q) → ¬ (P ∨ Q)  := by
-  sorry
+  intro hpq
+  intro porq
+  rcases hpq with ⟨hnp, hnq⟩
+  cases porq
+  case inl hp =>
+    have boom := hnp hp
+    exact boom
+  case inr hq =>
+    have boom := hnq hq
+    exact boom
 
 theorem demorgan_conj :
   ¬ (P ∧ Q) → (¬ Q ∨ ¬ P)  := by
