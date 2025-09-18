@@ -52,7 +52,7 @@ theorem conj_comm :
   (P ∧ Q) → (Q ∧ P)  := by
   intro hpq
   rcases hpq with ⟨hp, hq⟩
-  constructor   -- Scomando para separar o jogo em dois novos jogos
+  constructor   -- Ckomando para separar o jogo em dois novos jogos
   case intro.left =>
     exact hq
   case intro.right =>
@@ -92,15 +92,32 @@ theorem disj_as_impl :
 
 theorem impl_as_contrapositive :
   (P → Q) → (¬ Q → ¬ P)  := by
-  sorry
+  intro hpq
+  intro hnq
+  intro hp
+  have hq := hpq hp
+  have boom := hnq hq
+  exact boom
 
 theorem impl_as_contrapositive_converse :
   (¬ Q → ¬ P) → (P → Q)  := by
-  sorry
+  intro hnqnp
+  intro hp
+  by_cases hq : Q
+  case pos =>
+    exact hq
+  case neg =>
+    have hnp := hnqnp hq
+    have boom := hnp hp
+    contradiction
 
 theorem contrapositive_law :
   (P → Q) ↔ (¬ Q → ¬ P)  := by
-  sorry
+  apply Iff.intro
+  case mp =>
+    exact impl_as_contrapositive P Q
+  case mpr =>
+    exact impl_as_contrapositive_converse P Q
 
 
 ------------------------------------------------
@@ -109,7 +126,17 @@ theorem contrapositive_law :
 
 theorem lem_irrefutable :
   ¬ ¬ (P ∨ ¬ P)  := by
-  sorry
+  intro (h1 : ¬ (P ∨ ¬ P))
+  have h2 : (P ∨ ¬ P) := by  -- Equivalente ao "Vou demonstrar (P ∨ ¬ P)"
+    right
+    intro (h2 : P)
+    have h3 : (P ∨ ¬ P) := by
+      left
+      exact h2
+    have boom := h1 h3
+    contradiction
+  have boom := h1 h2
+  contradiction
 
 
 ------------------------------------------------
@@ -118,7 +145,15 @@ theorem lem_irrefutable :
 
 theorem peirce_law_weak :
   ((P → Q) → P) → ¬ ¬ P  := by
-  sorry
+  intro (hpqp : ((P → Q) → P))
+  intro (hnp : ¬ P)
+  have hpq : (P → Q) := by
+    intro (hp : P)
+    have boom := hnp hp
+    contradiction
+  have hp := hpqp hpq
+  have boom := hnp hp
+  contradiction
 
 
 ------------------------------------------------
@@ -146,11 +181,30 @@ theorem impl_linear :
 
 theorem disj_as_negconj :
   P ∨ Q → ¬ (¬ P ∧ ¬ Q)  := by
-  sorry
+  intro (porq : P ∨ Q)
+  intro (npnq : (¬ P ∧ ¬ Q))
+  rcases npnq with ⟨(hnp : ¬ P), (hnq : ¬ Q)⟩
+  rcases porq with ((hp : P) | (hq : Q))
+  case intro.inl =>
+    have boom := hnp hp
+    contradiction
+  case intro.inr =>
+    have boom := hnq hq
+    contradiction
+
 
 theorem conj_as_negdisj :
   P ∧ Q → ¬ (¬ P ∨ ¬ Q)  := by
-  sorry
+  intro (pandq : P ∧ Q)
+  intro (npornq : ¬ P ∨ ¬ Q)
+  rcases pandq with ⟨(hp : P), (hq : Q)⟩
+  rcases npornq with ((hnp : ¬ P) | (hnq : ¬ Q))
+  case intro.inl =>
+    have boom := hnp hp
+    contradiction
+  case intro.inr =>
+    have boom := hnq hq
+    contradiction
 
 
 ------------------------------------------------
@@ -159,7 +213,23 @@ theorem conj_as_negdisj :
 
 theorem demorgan_disj :
   ¬ (P ∨ Q) → (¬ P ∧ ¬ Q)  := by
-  sorry
+  intro (nporq : ¬ (P ∨ Q))
+  constructor
+  case left =>
+    intro (hp : P)
+    have porq : (P ∨ Q) := by
+      left
+      exact hp
+    have boom := nporq porq
+    contradiction
+  case right =>
+    intro (hq : Q)
+    have porq : (P ∨ Q) := by
+      right
+      exact hq
+    have boom := nporq porq
+    contradiction
+
 
 theorem demorgan_disj_converse :
   (¬ P ∧ ¬ Q) → ¬ (P ∨ Q)  := by
@@ -274,11 +344,13 @@ theorem conj_idem :
 
 theorem false_bottom :
   False → P := by
-  sorry
+  intro boom
+  contradiction
 
 theorem true_top :
   P → True  := by
-  sorry
+  intro hp
+  trivial
 
 
 end propositional
